@@ -36,6 +36,7 @@ static def getVersionCodeByTimestamp() {
 android {
     namespace 'org.levimc.launcher'
     compileSdkVersion 36
+    
     defaultConfig {
         applicationId "org.levimc.launcher"
         minSdkVersion 26
@@ -44,15 +45,13 @@ android {
         versionName getGitTag()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         
-        // Ключ берется из local.properties, но мы его уже прописали в коде Client, так что тут неважно
         buildConfigField "String", "CURSEFORGE_API_KEY", "\"${localProperties.getProperty('curseforge.api_key', '')}\""
         
         ndk {
             abiFilters 'arm64-v8a'
         }
 
-        // ОТКЛЮЧАЕМ ТУТ (Важно!)
-        /*
+        /* ОТКЛЮЧЕНО C++
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_shared"
@@ -79,7 +78,7 @@ android {
         }
         beta {
             initWith release
-            resValue "string", "app_name", "YinLauncher Beta" // Сразу поменял на твое название
+            resValue "string", "app_name", "YinLauncher Beta"
             buildConfigField "boolean", "IS_BETA", "true"
             matchingFallbacks = ["release"]
         }
@@ -96,13 +95,17 @@ android {
         ]
     }
 
+    // ИСПРАВЛЕНИЕ: Синхронизируем Java и Kotlin на версию 17
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
-    // ОТКЛЮЧАЕМ ТУТ (Основной блок)
-    /*
+    /* ОТКЛЮЧЕНО C++
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
@@ -129,4 +132,3 @@ dependencies {
     implementation libs.glide
     testImplementation libs.junit
 }
-

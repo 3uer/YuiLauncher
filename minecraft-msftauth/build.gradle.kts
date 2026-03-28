@@ -1,8 +1,3 @@
-plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-}
-
 android {
     namespace = "coelho.msftauth.api"
     compileSdk = 36
@@ -21,17 +16,15 @@ android {
             )
         }
     }
+
+    // ИСПРАВЛЕНИЕ ТУТ: Понижаем до 17
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-}
-
-dependencies {
-    api(libs.guava)
-    api(libs.gson)
-    api(libs.httpclient)
-    api(libs.bcprov.jdk15on)
-    api(libs.okhttp)
+    // ДОБАВЛЕНО: Указываем цель для Kotlin
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }

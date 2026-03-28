@@ -1,9 +1,3 @@
-plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    kotlin("kapt")
-}
-
 android {
     namespace = "com.mojang.minecraftpe"
     compileSdk = 36
@@ -22,9 +16,16 @@ android {
             )
         }
     }
+
+    // ИСПРАВЛЕНИЕ ТУТ: Понижаем до 17
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    // ДОБАВЛЕНО: Указываем цель для Kotlin
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     packaging {
@@ -45,48 +46,4 @@ android {
             )
         }
     }
-}
-
-dependencies {
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
-    implementation(libs.androidx.sqlite.framework)
-    implementation(libs.androidx.fragment.ktx)
-    implementation(libs.annotations)
-    implementation(libs.androidx.annotation)
-    implementation(libs.okhttp)
-    implementation(libs.httpclient)
-    implementation(libs.androidx.annotation)
-    implementation(libs.firebase.messaging)
-    implementation(libs.firebase.iid)
-
-    implementation(libs.pkix)
-
-    implementation(libs.gson)
-    implementation(libs.httpclient)
-    implementation(libs.simple.xml)
-    implementation(libs.androidx.activity.ktx)
-    implementation(libs.androidx.browser)
-
-    implementation(libs.pkix)
-    implementation(libs.core)
-    implementation(libs.prov)
-    implementation(libs.pkix)
-
-    // Architectural Components
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-    implementation(libs.androidx.lifecycle.extensions)
-    implementation(libs.billing)
-    implementation(libs.conscrypt.android)
-    implementation(libs.androidx.games.activity)
-    implementation(libs.core.splashscreen)
-    implementation(libs.androidx.preference.ktx)
-    implementation(libs.appcompat)
-    implementation(libs.material)
-
-    implementation(libs.firebase.messaging)
-    implementation(libs.firebase.iid)
 }
