@@ -1,15 +1,11 @@
 package org.levimc.launcher.core.curseforge;
 
-import org.levimc.launcher.BuildConfig;
 import com.google.gson.Gson;
-
 import org.levimc.launcher.core.curseforge.models.ContentSearchResponse;
 import org.levimc.launcher.core.curseforge.models.ModFilesResponse;
 import org.levimc.launcher.core.curseforge.models.StringResponse;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
@@ -20,7 +16,6 @@ import okhttp3.Response;
 public class CurseForgeClient {
     private static final String TAG = "CurseForgeClient";
     private static final String BASE_URL = "https://api.curseforge.com";
-    
     private static final String API_KEY = "$2a$10$uVkQjkhw4QQnxnXs7vRqqeb87717fjiTtlEokAWHnZ5Vb.uNRZqRi"; 
 
     public static final int GAME_ID_MINECRAFT = 432; 
@@ -32,7 +27,6 @@ public class CurseForgeClient {
     
     private final OkHttpClient client;
     private final Gson gson;
-
     private static CurseForgeClient instance;
 
     private CurseForgeClient() {
@@ -92,7 +86,6 @@ public class CurseForgeClient {
                     callback.onError(new IOException("Unexpected code " + response));
                     return;
                 }
-                
                 try {
                     String json = response.body().string();
                     ContentSearchResponse contentResponse = gson.fromJson(json, ContentSearchResponse.class);
@@ -124,7 +117,6 @@ public class CurseForgeClient {
                     callback.onError(new IOException("Unexpected code " + response));
                     return;
                 }
-
                 try {
                     String json = response.body().string();
                     StringResponse stringResponse = gson.fromJson(json, StringResponse.class);
@@ -159,7 +151,6 @@ public class CurseForgeClient {
                     callback.onError(new IOException("Unexpected code " + response));
                     return;
                 }
-
                 try {
                     String json = response.body().string();
                     ModFilesResponse filesResponse = gson.fromJson(json, ModFilesResponse.class);
