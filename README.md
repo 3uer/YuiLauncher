@@ -1,47 +1,43 @@
 <div align="center">
   <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="128" height="128" alt="YinLauncher Logo">
   
-  # YinLauncher ☯️
+  # YinLauncher
   
-  [![Version](https://img.shields.io/badge/Release-v1.0.0--beta-black?style=for-the-badge)](https://github.com/3uer/YinLauncher/releases)
+  [![Release](https://img.shields.io/badge/Release-v1.0.0--beta-black?style=for-the-badge)](https://github.com/3uer/YinLauncher/releases)
   [![Platform](https://img.shields.io/badge/Platform-Android_8.0+-black?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com/)
   [![License](https://img.shields.io/badge/License-Apache_2.0-black?style=for-the-badge)](LICENSE)
 
-  **A high-performance, monochromatic utility for Minecraft: Bedrock Edition.** *Built for those who demand minimalism and power.*
+  **Minimalist. Fast. Yours.**
+  *The ultimate environment for launching and modifying Minecraft: Bedrock Edition.*
 </div>
 
 ---
 
-## The Concept
+## About the Project
 
-**YinLauncher** is a specialized environment for Minecraft Bedrock (MCBE) power users. Born as a refined fork of the LeviMC project, it strips away the clutter of standard launchers in favor of a brutalist, high-contrast UI and deep technical integration.
+**YinLauncher** is an independent fork of the LeviLaunchroid project, built around the concept of absolute balance. Zero visual clutter and intrusive elements. Just a clean, monochrome interface and complete low-level control over the game's file system. 
 
-The philosophy is simple: **Balance.** Total control over your game files on one side, and a seamless, distraction-free interface on the other.
+The goal of this project is to provide power users with a tool that combines isolated version management with a robust, integrated content manager.
 
-## Core Features
+## Key Features
 
-* **☯️ Yin-Yang Aesthetics:** A fully customized, system-wide monochromatic theme optimized for OLED displays.
-* **🦊 Integrated CurseForge Browser:** Search, download, and inject Add-ons, Maps, and Resource Packs directly from the UI. No manual file moving required.
-* **📦 Zero-Install Launching:** Import official APKs and run them in an isolated container. Keep your system clean and manage multiple versions simultaneously.
-* **💉 Native Module Injection:** Full support for loading custom `.so` modules to extend game logic and optimize rendering.
-* **☁️ Multi-Account Sync:** Seamlessly switch between various Microsoft/Xbox Live profiles without re-authenticating every time.
+* **Version Isolation (Zero-Install):** Run official Minecraft APKs without installing them into the Android OS. Each version operates within its own secure container with independent save data.
+* **CurseForge Integration:** Built-in CurseForge API parser. Search, download, and automatically install `.mcpack` and `.mcworld` files directly into the target game directory.
+* **Native Module Injection:** Full support for loading custom `.so` libraries (C++) to deeply modify rendering logic and core game mechanics.
+* **Monochrome UI:** The interface is designed with a focus on deep black (True Black), which is perfect for OLED displays and significantly reduces eye strain.
 
-## Quick Setup
+## Deployment & Usage
 
-1.  **Download:** Grab the latest build from the [Releases](https://github.com/3uer/YinLauncher/releases) tab.
-2.  **Verify:** Ensure you have a licensed copy of Minecraft installed from the Play Store (required for library verification).
-3.  **Permissions:** Grant "All Files Access." YinLauncher needs this to manage the isolated game directories and inject modules.
-4.  **Launch:** Import your APK and start playing.
+1. Download the latest APK from the [Releases](https://github.com/3uer/YinLauncher/releases) section.
+2. A legally purchased license for MCBE is required for proper functionality.
+3. On the first launch, grant the `All Files Access` permission. This is critical for the `UnpairCore` file isolation system to work.
+4. Import your target game APK and launch the container.
 
-## Technical Internals
+## Building from Source
 
-YinLauncher leverages the **UnpairCore** framework to handle low-level process redirection. By isolating the game's data directory, we ensure that your resource packs and worlds never conflict between different versions.
-
-### Building from Source
-If you are a developer looking to contribute or audit the code:
+This project contains C++ dependencies (NDK) required for the injection system. You can build the project locally or utilize configured CI/CD pipelines.
 
 ```bash
 git clone [https://github.com/3uer/YinLauncher.git](https://github.com/3uer/YinLauncher.git)
 cd YinLauncher
-# Ensure Android SDK & NDK are configured
 ./gradlew assembleDebug
