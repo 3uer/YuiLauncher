@@ -16,10 +16,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+// НОВЫЙ И ИДЕАЛЬНЫЙ СПОСОБ ДЛЯ KOTLIN
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -30,4 +31,3 @@ dependencies {
     implementation(libs.material)
     implementation(libs.appcompat)
 }
-
