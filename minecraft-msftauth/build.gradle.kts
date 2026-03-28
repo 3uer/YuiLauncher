@@ -26,3 +26,4 @@ dependencies {
     api(libs.gson)
     api(libs.okhttp)
 }
+

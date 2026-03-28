@@ -30,3 +30,4 @@ dependencies {
     implementation(libs.material)
     implementation(libs.appcompat)
 }
+
