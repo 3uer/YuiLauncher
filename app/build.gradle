@@ -130,5 +130,11 @@ dependencies {
     implementation libs.bedrock.connection
     implementation libs.xcrash.android.lib
     implementation libs.glide
+    
+    // ВОТ ОНИ! Две строчки, которые я случайно убрал:
+    implementation libs.conscrypt.android
+    implementation libs.androidx.games.activity
+    
     testImplementation libs.junit
 }
+
