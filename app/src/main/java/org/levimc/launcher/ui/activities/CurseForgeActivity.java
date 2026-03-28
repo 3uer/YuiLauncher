@@ -1,203 +1,164 @@
-package org.levimc.launcher.ui.activities;
+package org.levimc.launcher.core.curseforge;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
-import android.widget.TextView; // Добавлено
-import android.widget.Toast;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import org.levimc.launcher.R;
-import org.levimc.launcher.core.curseforge.CurseForgeClient;
-import org.levimc.launcher.core.curseforge.models.Content;
+import com.google.gson.Gson;
 import org.levimc.launcher.core.curseforge.models.ContentSearchResponse;
-import org.levimc.launcher.ui.adapter.CurseForgeContentAdapter;
-import org.levimc.launcher.util.UIHelper;
+import org.levimc.launcher.core.curseforge.models.ModFilesResponse;
+import org.levimc.launcher.core.curseforge.models.StringResponse;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+public class CurseForgeClient {
+    private static final String TAG = "CurseForgeClient";
+    private static final String BASE_URL = "https://api.curseforge.com";
+    private static final String API_KEY = "$2a$10$uVkQjkhw4QQnxnXs7vRqqeb87717fjiTtlEokAWHnZ5Vb.uNRZqRi"; 
 
-public class CurseForgeActivity extends BaseActivity {
+    public static final int GAME_ID_MINECRAFT = 432; 
 
-    private EditText searchBox;
-    private Spinner spinnerCategory;
-    private Spinner spinnerSort;
-    private RecyclerView recyclerView;
-    private ProgressBar loadingProgress;
-    private CurseForgeContentAdapter adapter;
-    private CurseForgeClient client;
-    private Handler handler = new Handler(Looper.getMainLooper());
-    private int currentPage = 1;
-    private int totalPages = 1;
-    private static final int PAGE_SIZE = 20;
-
-    // Классы для категорий и сортировки (без изменений)
-    private static class Category {
-        String name; int id;
-        Category(String name, int id) { this.name = name; this.id = id; }
-        @Override public String toString() { return name; }
-    }
+    public static final String SORT_POPULARITY = "2";
+    public static final String SORT_LAST_UPDATED = "3";
+    public static final String SORT_NAME = "4";
+    public static final String SORT_TOTAL_DOWNLOADS = "6";
     
-    private final List<Category> categories = new ArrayList<>();
+    private final OkHttpClient client;
+    private final Gson gson;
+    private static CurseForgeClient instance;
 
-    private static class SortOption {
-        String name; String field; String order;
-        SortOption(String name, String field, String order) { 
-            this.name = name; this.field = field; this.order = order;
+    private CurseForgeClient() {
+        this.client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+        this.gson = new Gson();
+    }
+
+    public static synchronized CurseForgeClient getInstance() {
+        if (instance == null) {
+            instance = new CurseForgeClient();
         }
-        @Override public String toString() { return name; }
+        return instance;
     }
-    
-    private final List<SortOption> sortOptions = new ArrayList<>();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_curseforge);
+    public interface CurseForgeCallback<T> {
+        void onSuccess(T result);
+        void onError(Throwable t);
+    }
 
-        // YinLauncher Branding: Принудительно ставим черный фон программно
-        if (getWindow() != null) {
-            getWindow().getDecorView().setBackgroundColor(getResources().getColor(R.color.black));
+    public void searchContent(String query, int classId, String version, int index, int pageSize, String sortField, String sortOrder, CurseForgeCallback<ContentSearchResponse> callback) {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + "/v1/mods/search").newBuilder();
+        urlBuilder.addQueryParameter("gameId", String.valueOf(GAME_ID_MINECRAFT));
+        urlBuilder.addQueryParameter("sortField", sortField != null ? sortField : SORT_POPULARITY);
+        urlBuilder.addQueryParameter("sortOrder", sortOrder != null ? sortOrder : "desc");
+        urlBuilder.addQueryParameter("index", String.valueOf(index));
+        urlBuilder.addQueryParameter("pageSize", String.valueOf(pageSize));
+        
+        if (query != null && !query.isEmpty()) {
+            urlBuilder.addQueryParameter("searchFilter", query);
+        }
+        if (classId > 0) {
+            urlBuilder.addQueryParameter("classId", String.valueOf(classId));
+        }
+        if (version != null && !version.isEmpty() && !"All".equals(version)) {
+            urlBuilder.addQueryParameter("gameVersion", version);
         }
 
-        client = CurseForgeClient.getInstance();
+        Request request = new Request.Builder()
+                .url(urlBuilder.build())
+                .addHeader("x-api-key", API_KEY)
+                .addHeader("Accept", "application/json")
+                .build();
 
-        setupData();
-        initViews();
-        loadContent();
-    }
-    
-    private void setupData() {
-        categories.add(new Category("All Categories", 0));
-        categories.add(new Category("Addons", 4984));
-        categories.add(new Category("Maps", 6913));
-        categories.add(new Category("Skins", 6925));
-        categories.add(new Category("Texture Packs", 6929));
-        categories.add(new Category("Scripts", 6940));
-
-        sortOptions.add(new SortOption("Popularity ☯️", CurseForgeClient.SORT_POPULARITY, "desc"));
-        sortOptions.add(new SortOption("Downloads", CurseForgeClient.SORT_TOTAL_DOWNLOADS, "desc"));
-        sortOptions.add(new SortOption("Updated", CurseForgeClient.SORT_LAST_UPDATED, "desc"));
-        sortOptions.add(new SortOption("Name", CurseForgeClient.SORT_NAME, "asc"));
-    }
-
-    private void initViews() {
-        searchBox = findViewById(R.id.search_box);
-        spinnerCategory = findViewById(R.id.spinner_category);
-        spinnerSort = findViewById(R.id.spinner_sort);
-        recyclerView = findViewById(R.id.mods_recycler);
-        loadingProgress = findViewById(R.id.loading_progress);
-        View backButton = findViewById(R.id.back_button);
-
-        // Устанавливаем логотип YinLauncher в заголовок, если есть ImageView
-        //View logoView = findViewById(R.id.header_logo); // Проверь ID в XML
-       // if (logoView instanceof android.widget.ImageView) {
-            //((android.widget.ImageView) logoView).setImageResource(R.drawable.ic_launcher_foreground);
-        //}
-
-        backButton.setOnClickListener(v -> finish());
-
-        adapter = new CurseForgeContentAdapter(this::onContentClick, new CurseForgeContentAdapter.OnPageChangeListener() {
-            @Override public void onNextPage() { if (currentPage < totalPages) { currentPage++; loadContent(); } }
-            @Override public void onPrevPage() { if (currentPage > 1) { currentPage--; loadContent(); } }
-        });
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
-
-        searchBox.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                currentPage = 1;
-                loadContent();
-                UIHelper.hideKeyboard(this);
-                return true;
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e);
             }
-            return false;
-        });
 
-        // Кастомные адаптеры для спиннеров (чтобы текст был белым в темной теме)
-        ArrayAdapter<Category> categoryAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategory.setAdapter(categoryAdapter);
-        
-        ArrayAdapter<SortOption> sortAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortOptions);
-        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerSort.setAdapter(sortAdapter);
-        
-        AdapterView.OnItemSelectedListener listener = new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Делаем текст в спиннере белым
-                if (view instanceof TextView) {
-                    ((TextView) view).setTextColor(getResources().getColor(R.color.white));
+            @Override
+            public void onResponse(Call call, Response response) {
+                if (!response.isSuccessful()) {
+                    callback.onError(new IOException("Unexpected code " + response));
+                    return;
                 }
-                currentPage = 1;
-                loadContent();
-            }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
-        };
-        
-        spinnerCategory.setOnItemSelectedListener(listener);
-        spinnerSort.setOnItemSelectedListener(listener);
-    }
-    
-    private void loadContent() {
-        String query = searchBox.getText().toString();
-        Category category = (Category) spinnerCategory.getSelectedItem();
-        SortOption sort = (SortOption) spinnerSort.getSelectedItem();
-        
-        loadingProgress.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.GONE);
-
-        int index = (currentPage - 1) * PAGE_SIZE;
-
-        // Вызов к CurseForgeClient (убедись, что ключ API прописан там)
-        client.searchContent(query, category != null ? category.id : 0, "", index, PAGE_SIZE, 
-            sort != null ? sort.field : CurseForgeClient.SORT_POPULARITY, 
-            sort != null ? sort.order : "desc", new CurseForgeClient.CurseForgeCallback<ContentSearchResponse>() {
-            
-            @Override
-            public void onSuccess(ContentSearchResponse result) {
-                handler.post(() -> {
-                    loadingProgress.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    if (result != null && result.data != null) {
-                        totalPages = (result.pagination != null && result.pagination.totalCount > 0) 
-                            ? (int) Math.ceil((double) result.pagination.totalCount / PAGE_SIZE) 
-                            : (result.data.size() < PAGE_SIZE ? currentPage : currentPage + 1);
-                        
-                        adapter.setContents(result.data, currentPage, totalPages);
-                        recyclerView.scrollToPosition(0);
-                    } else {
-                        adapter.setContents(Collections.emptyList(), 1, 1);
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                handler.post(() -> {
-                    loadingProgress.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    Toast.makeText(CurseForgeActivity.this, "YinLauncher Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                try {
+                    String json = response.body().string();
+                    ContentSearchResponse contentResponse = gson.fromJson(json, ContentSearchResponse.class);
+                    callback.onSuccess(contentResponse);
+                } catch (Exception e) {
+                    callback.onError(e);
+                }
             }
         });
     }
 
-    private void onContentClick(Content content) {
-        Intent intent = new Intent(this, ContentDetailsActivity.class);
-        intent.putExtra(ContentDetailsActivity.EXTRA_CONTENT, content);
-        startActivity(intent);
+    public void getContentDescription(int contentId, CurseForgeCallback<String> callback) {
+        String url = BASE_URL + "/v1/mods/" + contentId + "/description";
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("x-api-key", API_KEY)
+                .addHeader("Accept", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    callback.onError(new IOException("Unexpected code " + response));
+                    return;
+                }
+                try {
+                    String json = response.body().string();
+                    StringResponse stringResponse = gson.fromJson(json, StringResponse.class);
+                    callback.onSuccess(stringResponse.data);
+                } catch (Exception e) {
+                    callback.onError(e);
+                }
+            }
+        });
+    }
+
+    public void getModFiles(int modId, int index, int pageSize, CurseForgeCallback<ModFilesResponse> callback) {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + "/v1/mods/" + modId + "/files").newBuilder();
+        urlBuilder.addQueryParameter("index", String.valueOf(index));
+        urlBuilder.addQueryParameter("pageSize", String.valueOf(pageSize));
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.build())
+                .addHeader("x-api-key", API_KEY)
+                .addHeader("Accept", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                if (!response.isSuccessful()) {
+                    callback.onError(new IOException("Unexpected code " + response));
+                    return;
+                }
+                try {
+                    String json = response.body().string();
+                    ModFilesResponse filesResponse = gson.fromJson(json, ModFilesResponse.class);
+                    callback.onSuccess(filesResponse);
+                } catch (Exception e) {
+                    callback.onError(e);
+                }
+            }
+        });
     }
 }
