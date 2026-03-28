@@ -1,19 +1,19 @@
 plugins {
-    id 'com.android.library'
-    id 'kotlin-android'
+    id("com.android.library")
+    id("kotlin-android")
 }
 
 android {
-    namespace "coelho.msftauth.api"
-    compileSdk 36
+    namespace = "coelho.msftauth.api"
+    compileSdk = 36
 
     defaultConfig {
-        minSdk 26
+        minSdk = 26
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    api libs.guava
-    api libs.gson
-    api libs.okhttp
+    api(libs.guava)
+    api(libs.gson)
+    api(libs.okhttp)
 }
