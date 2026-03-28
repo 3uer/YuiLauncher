@@ -1,3 +1,10 @@
+import com.android.build.gradle.BaseExtension // ДОБАВЛЕНО
+
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+}
+
 android {
     namespace = "coelho.msftauth.api"
     compileSdk = 36
@@ -8,23 +15,24 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
-    // ИСПРАВЛЕНИЕ ТУТ: Понижаем до 17
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // ДОБАВЛЕНО: Указываем цель для Kotlin
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+dependencies {
+    api(libs.guava)
+    api(libs.gson)
+    api(libs.okhttp)
 }
