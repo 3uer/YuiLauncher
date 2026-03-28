@@ -43,80 +43,72 @@ android {
         versionCode getVersionCodeByTimestamp()
         versionName getGitTag()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Ключ берется из local.properties, но мы его уже прописали в коде Client, так что тут неважно
         buildConfigField "String", "CURSEFORGE_API_KEY", "\"${localProperties.getProperty('curseforge.api_key', '')}\""
+        
         ndk {
-            //noinspection ChromeOsAbiSupport
             abiFilters 'arm64-v8a'
         }
+
+        // ОТКЛЮЧАЕМ ТУТ (Важно!)
+        /*
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_shared"
             }
         }
+        */
     }
 
     buildFeatures {
         viewBinding true
-    }
-    buildFeatures {
         prefab true
-    }
-    buildFeatures {
         buildConfig true
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            ndk {
-                debugSymbolLevel 'FULL'
-            }
             buildConfigField "boolean", "IS_BETA", "false"
         }
         debug {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            ndk {
-                debugSymbolLevel 'FULL'
-            }
             buildConfigField "boolean", "IS_BETA", "false"
         }
         beta {
             initWith release
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            resValue "string", "app_name", "LeviLauncher Beta"
+            resValue "string", "app_name", "YinLauncher Beta" // Сразу поменял на твое название
             buildConfigField "boolean", "IS_BETA", "true"
             matchingFallbacks = ["release"]
-            ndk {
-                debugSymbolLevel 'FULL'
-            }
         }
-
     }
+
     packagingOptions {
         jniLibs.useLegacyPackaging = true
         doNotStrip "**/*.so"
-        resources.excludes += [
-                "DebugProbesKt.bin"
-        ]
-
+        resources.excludes += ["DebugProbesKt.bin"]
         resources.pickFirsts += [
                 "META-INF/INDEX.LIST",
                 "META-INF/DEPENDENCIES",
                 "META-INF/io.netty.versions.properties"
         ]
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
     }
 
+    // ОТКЛЮЧАЕМ ТУТ (Основной блок)
+    /*
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
         }
     }
+    */
 
     ndkVersion = "27.2.12479018"
 }
@@ -126,19 +118,15 @@ dependencies {
     implementation project(':minecraft-msftauth')
     implementation libs.core.splashscreen
     implementation libs.appcompat
-    implementation libs.conscrypt.android
     implementation libs.constraintlayout
     implementation libs.material
     implementation libs.gson
     implementation libs.androidx.preference.ktx
-    implementation libs.conscrypt.android
-    implementation libs.androidx.games.activity
     implementation libs.okhttp
     implementation libs.androidx.dynamicanimation
     implementation libs.bedrock.connection
     implementation libs.xcrash.android.lib
-    testImplementation libs.junit
-    androidTestImplementation libs.ext.junit
-    androidTestImplementation libs.espresso.core
     implementation libs.glide
+    testImplementation libs.junit
 }
+
