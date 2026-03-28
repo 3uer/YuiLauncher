@@ -26,10 +26,6 @@ public class CurseForgeClient {
     public static final int GAME_ID_MINECRAFT = 432; 
 
     public static final String SORT_POPULARITY = "2";
-
-    public static final int GAME_ID_MINECRAFT = 78022;
-
-    public static final String SORT_POPULARITY = "2";
     public static final String SORT_LAST_UPDATED = "3";
     public static final String SORT_NAME = "4";
     public static final String SORT_TOTAL_DOWNLOADS = "6";

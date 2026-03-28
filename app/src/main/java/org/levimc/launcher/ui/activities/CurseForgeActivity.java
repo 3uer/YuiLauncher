@@ -101,7 +101,7 @@ public class CurseForgeActivity extends BaseActivity {
         View backButton = findViewById(R.id.back_button);
 
         // Устанавливаем логотип YinLauncher в заголовок, если есть ImageView
-        View logoView = findViewById(R.id.header_logo); // Проверь ID в XML
+        //View logoView = findViewById(R.id.header_logo); // Проверь ID в XML
         if (logoView instanceof android.widget.ImageView) {
             ((android.widget.ImageView) logoView).setImageResource(R.drawable.ic_launcher_foreground);
         }
