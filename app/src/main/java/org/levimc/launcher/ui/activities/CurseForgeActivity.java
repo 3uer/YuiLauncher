@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView; // Добавлено
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -41,10 +42,9 @@ public class CurseForgeActivity extends BaseActivity {
     private int totalPages = 1;
     private static final int PAGE_SIZE = 20;
 
-
+    // Классы для категорий и сортировки (без изменений)
     private static class Category {
-        String name;
-        int id;
+        String name; int id;
         Category(String name, int id) { this.name = name; this.id = id; }
         @Override public String toString() { return name; }
     }
@@ -52,13 +52,9 @@ public class CurseForgeActivity extends BaseActivity {
     private final List<Category> categories = new ArrayList<>();
 
     private static class SortOption {
-        String name;
-        String field;
-        String order;
+        String name; String field; String order;
         SortOption(String name, String field, String order) { 
-            this.name = name; 
-            this.field = field; 
-            this.order = order;
+            this.name = name; this.field = field; this.order = order;
         }
         @Override public String toString() { return name; }
     }
@@ -69,6 +65,11 @@ public class CurseForgeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_curseforge);
+
+        // YinLauncher Branding: Принудительно ставим черный фон программно
+        if (getWindow() != null) {
+            getWindow().getDecorView().setBackgroundColor(getResources().getColor(R.color.black));
+        }
 
         client = CurseForgeClient.getInstance();
 
@@ -85,9 +86,9 @@ public class CurseForgeActivity extends BaseActivity {
         categories.add(new Category("Texture Packs", 6929));
         categories.add(new Category("Scripts", 6940));
 
-        sortOptions.add(new SortOption("Relevancy", CurseForgeClient.SORT_POPULARITY, "desc"));
-        sortOptions.add(new SortOption("Total Downloads", CurseForgeClient.SORT_TOTAL_DOWNLOADS, "desc"));
-        sortOptions.add(new SortOption("Last Updated", CurseForgeClient.SORT_LAST_UPDATED, "desc"));
+        sortOptions.add(new SortOption("Popularity ☯️", CurseForgeClient.SORT_POPULARITY, "desc"));
+        sortOptions.add(new SortOption("Downloads", CurseForgeClient.SORT_TOTAL_DOWNLOADS, "desc"));
+        sortOptions.add(new SortOption("Updated", CurseForgeClient.SORT_LAST_UPDATED, "desc"));
         sortOptions.add(new SortOption("Name", CurseForgeClient.SORT_NAME, "asc"));
     }
 
@@ -99,28 +100,21 @@ public class CurseForgeActivity extends BaseActivity {
         loadingProgress = findViewById(R.id.loading_progress);
         View backButton = findViewById(R.id.back_button);
 
+        // Устанавливаем логотип YinLauncher в заголовок, если есть ImageView
+        View logoView = findViewById(R.id.header_logo); // Проверь ID в XML
+        if (logoView instanceof android.widget.ImageView) {
+            ((android.widget.ImageView) logoView).setImageResource(R.drawable.ic_launcher_foreground);
+        }
+
         backButton.setOnClickListener(v -> finish());
 
         adapter = new CurseForgeContentAdapter(this::onContentClick, new CurseForgeContentAdapter.OnPageChangeListener() {
-            @Override
-            public void onNextPage() {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    loadContent();
-                }
-            }
-
-            @Override
-            public void onPrevPage() {
-                if (currentPage > 1) {
-                    currentPage--;
-                    loadContent();
-                }
-            }
+            @Override public void onNextPage() { if (currentPage < totalPages) { currentPage++; loadContent(); } }
+            @Override public void onPrevPage() { if (currentPage > 1) { currentPage--; loadContent(); } }
         });
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-
 
         searchBox.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -129,10 +123,10 @@ public class CurseForgeActivity extends BaseActivity {
                 UIHelper.hideKeyboard(this);
                 return true;
             }
-
             return false;
         });
 
+        // Кастомные адаптеры для спиннеров (чтобы текст был белым в темной теме)
         ArrayAdapter<Category> categoryAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategory.setAdapter(categoryAdapter);
@@ -143,10 +137,13 @@ public class CurseForgeActivity extends BaseActivity {
         
         AdapterView.OnItemSelectedListener listener = new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // Делаем текст в спиннере белым
+                if (view instanceof TextView) {
+                    ((TextView) view).setTextColor(getResources().getColor(R.color.white));
+                }
                 currentPage = 1;
                 loadContent();
             }
-
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         };
         
@@ -164,44 +161,35 @@ public class CurseForgeActivity extends BaseActivity {
 
         int index = (currentPage - 1) * PAGE_SIZE;
 
-        client.searchContent(query, category != null ? category.id : 0, "", index, PAGE_SIZE, sort != null ? sort.field : CurseForgeClient.SORT_POPULARITY, sort != null ? sort.order : "desc", new CurseForgeClient.CurseForgeCallback<ContentSearchResponse>() {
+        // Вызов к CurseForgeClient (убедись, что ключ API прописан там)
+        client.searchContent(query, category != null ? category.id : 0, "", index, PAGE_SIZE, 
+            sort != null ? sort.field : CurseForgeClient.SORT_POPULARITY, 
+            sort != null ? sort.order : "desc", new CurseForgeClient.CurseForgeCallback<ContentSearchResponse>() {
+            
             @Override
             public void onSuccess(ContentSearchResponse result) {
                 handler.post(() -> {
                     loadingProgress.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
                     if (result != null && result.data != null) {
-
-                        if (result.pagination != null && result.pagination.totalCount > 0) {
-                             totalPages = (int) Math.ceil((double) result.pagination.totalCount / PAGE_SIZE);
-                        } else {
-                            if (result.data.size() < PAGE_SIZE) {
-                                totalPages = currentPage;
-                            } else {
-                                totalPages = currentPage + 1;
-                            }
-                        }
+                        totalPages = (result.pagination != null && result.pagination.totalCount > 0) 
+                            ? (int) Math.ceil((double) result.pagination.totalCount / PAGE_SIZE) 
+                            : (result.data.size() < PAGE_SIZE ? currentPage : currentPage + 1);
                         
                         adapter.setContents(result.data, currentPage, totalPages);
-                        
-                        if (result.data.isEmpty()) {
-                            Toast.makeText(CurseForgeActivity.this, R.string.no_mods_found, Toast.LENGTH_SHORT).show();
-                        }
                         recyclerView.scrollToPosition(0);
                     } else {
                         adapter.setContents(Collections.emptyList(), 1, 1);
                     }
-
                 });
             }
-
 
             @Override
             public void onError(Throwable t) {
                 handler.post(() -> {
                     loadingProgress.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
-                    Toast.makeText(CurseForgeActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CurseForgeActivity.this, "YinLauncher Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 });
             }
         });
