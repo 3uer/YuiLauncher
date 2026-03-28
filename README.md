@@ -1,15 +1,14 @@
 <div align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="128" height="128" alt="YinLauncher Logo">
+  <img src="logo.png" width="200" height="200" alt="YinLauncher Logo">
   
   # YinLauncher
   
   [![Release](https://img.shields.io/badge/Release-v1.0.0--beta-black?style=for-the-badge)](https://github.com/3uer/YinLauncher/releases)
   [![Platform](https://img.shields.io/badge/Platform-Android_8.0+-black?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com/)
-  [![License](https://img.shields.io/badge/License-Apache_2.0-black?style=for-the-badge)](LICENSE)
-
+  
   **Minimalist. Fast. Yours.**
-  *The ultimate environment for launching and modifying Minecraft: Bedrock Edition.*
 </div>
+
 
 ---
 
