@@ -175,9 +175,9 @@ import okhttp3.OkHttpClient;
 
 
     private void initAccountHeader() {
-        signInButton = binding.signInButton;
-        accountAvatar = binding.accountAvatar;
-        accountAvatarContainer = binding.accountAvatarContainer;
+        signInButton = //binding.signInButton;
+        accountAvatar = //binding.accountAvatar;
+        accountAvatarContainer = //binding.accountAvatarContainer;
         avatarProgress = binding.avatarProgress;
 
         if (signInButton != null) {
@@ -494,8 +494,8 @@ import okhttp3.OkHttpClient;
         inbuiltModsCount = binding.inbuiltModsCount;
         
         binding.modCard.setOnClickListener(v -> openModsFullscreen());
-        binding.manageModsButton.setOnClickListener(v -> openModsFullscreen());
-        DynamicAnim.applyPressScale(binding.manageModsButton);
+        //binding.manageModsButton.setOnClickListener(v -> openModsFullscreen());
+        DynamicAnim.applyPressScale(//binding.manageModsButton);
         
         viewModel.getModsLiveData().observe(this, this::updateModsUI);
     }
@@ -598,7 +598,7 @@ import okhttp3.OkHttpClient;
     private void updateGenuineBadge() {
         if (binding == null) return;
         boolean verified = PlayStoreValidator.isMinecraftFromPlayStore(this);
-        binding.genuineLabel.setVisibility(verified ? View.GONE : View.VISIBLE);
+        //binding.genuineLabel.setVisibility(verified ? View.GONE : View.VISIBLE);
     }
 
     private void updateBetaBadge() {
@@ -640,10 +640,10 @@ import okhttp3.OkHttpClient;
         binding.deleteVersionButton.setOnClickListener(v -> showDeleteVersionDialog());
         DynamicAnim.applyPressScale(binding.deleteVersionButton);
 
-        binding.genuineLabel.setOnClickListener(v -> {
+        //binding.genuineLabel.setOnClickListener(v -> {
             PlayStoreValidationDialog.showNotFromPlayStoreDialog(this);
         });
-        DynamicAnim.applyPressScale(binding.genuineLabel);
+        DynamicAnim.applyPressScale(//binding.genuineLabel);
 
         initQuickActionsRecycler();
 
